@@ -1,0 +1,768 @@
+{
+  "name": "Automated Content Posting",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1S-0xnld6IGLCv2nfpvkxnSdIxzdtvV8nK5bPI9Vu7c0",
+          "mode": "list",
+          "cachedResultName": "Social Media Content",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1S-0xnld6IGLCv2nfpvkxnSdIxzdtvV8nK5bPI9Vu7c0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1S-0xnld6IGLCv2nfpvkxnSdIxzdtvV8nK5bPI9Vu7c0/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2416,
+        144
+      ],
+      "id": "896bfd66-2234-48f3-8291-f0d89a55262f",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "v5AVHCpPxCLkJ59X",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Repurpose the following content ,image_url(if any) & video_url(if any) into a professional {{ $json.platform }} post. \n\nHere's the content:\n\n{{ $json.content }}\n\nHere's the image_url(if any):\n\n{{ $json.image_url }}\n\nHere's the video_url(if any):\n\n{{ $json.video_url }}\n\n# Instructions\n\n1. Keep the content simple, easy to understand but professional.\n\n2. Make the content tailored for {{ $json.platform }} only.\n\n3. Only keep the content (and if any image_url and if any, video_url), the thing to be posted on {{ $json.platform }}. Remove everything else.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -1120,
+        144
+      ],
+      "id": "928e01d9-e8c6-4692-bca0-9d0708dbc21e",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        384
+      ],
+      "id": "9dda6120-c697-4aa7-b2a4-550357120c82",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "g4j7QX4ybvkoxqZG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cc8b4245-0410-40f3-80d8-1b6a403c846c",
+              "name": "text",
+              "value": "={{ $json.text.trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -704,
+        144
+      ],
+      "id": "5f0c15bb-252a-433e-893e-26984d7b0976",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Get Last Row in Sheets').item.json.platform }}",
+                    "rightValue": "facebook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "cc7569bf-5398-4026-ad31-87b863b6cf7d"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c85e79bc-9dd1-467a-9a2b-8d1f600a91fb",
+                    "leftValue": "={{ $('Get Last Row in Sheets').item.json.platform }}",
+                    "rightValue": "twitter",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d25f36ee-86e6-4b40-a41e-633664c20ee7",
+                    "leftValue": "={{ $('Get Last Row in Sheets').item.json.platform }}",
+                    "rightValue": "linkedin",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -480,
+        128
+      ],
+      "id": "13f45175-5f8a-4dd3-b35f-c89320eaac73",
+      "name": "Switch Platform"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/202673179589977/feed",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $('Edit Fields').item.json.text }}"
+            },
+            {
+              "name": "link",
+              "value": "={{ $('Google Sheets Trigger').item.json.url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        -176
+      ],
+      "id": "985ffea9-8483-4307-b76a-6dca5a42c792",
+      "name": "Post To Facebook With Link",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "hjiL6uhGlQkjgfKw",
+          "name": "Post To Facebook With Link"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/202673179589977/feed",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        128
+      ],
+      "id": "2d63aa5d-1c46-40c1-aa04-1e572663590f",
+      "name": "Post To Facebook Without Link",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "hjiL6uhGlQkjgfKw",
+          "name": "Post To Facebook With Link"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.x.com/2/tweets/",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twitterOAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $('Edit Fields').item.json.text }}"
+            },
+            {
+              "name": "direct_message_deep_link",
+              "value": "={{ $('Get Last Row in Sheets').item.json.url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        336
+      ],
+      "id": "6827d045-6428-40a2-ad71-69176bb04ea0",
+      "name": "Post To Twitter With Link",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "lFVQGw6lDiLQ69Ky",
+          "name": "X account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "79d15512-7032-405b-b5cd-c9a00e3603f8",
+              "leftValue": "={{ $('Google Sheets Trigger').item.json.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        -32
+      ],
+      "id": "db042874-756a-4fcc-abd7-1db3fa9a1113",
+      "name": "If Facebook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "79d15512-7032-405b-b5cd-c9a00e3603f8",
+              "leftValue": "={{ $('Get Last Row in Sheets').item.json.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        432
+      ],
+      "id": "af95ef1b-5235-4c4b-8f1b-7bfeb7d93690",
+      "name": "If Twitter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.x.com/2/tweets/",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twitterOAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        592
+      ],
+      "id": "845a0e1d-4920-4a8b-8400-e1b925201e87",
+      "name": "Post To Twitter Without Link",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "lFVQGw6lDiLQ69Ky",
+          "name": "X account"
+        },
+        "oAuth2Api": {
+          "id": "Jotl4vsAqugWD3Mk",
+          "name": "Twiiter POST OAuth2"
+        },
+        "httpBearerAuth": {
+          "id": "qDxVAYorBkoJRl0V",
+          "name": "X Bearer Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7bab33a3-b569-475e-a7c9-ef3b7b75e43b",
+              "leftValue": "={{ $('Get Last Row in Sheets').item.json.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        928
+      ],
+      "id": "40dd7357-8bfa-4cc8-9777-e31ab73cf481",
+      "name": "If Linkedin"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/v2/ugcPosts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"author\": \"\",\n    \"lifecycleState\": \"PUBLISHED\",\n    \"specificContent\": {\n        \"com.linkedin.ugc.ShareContent\": {\n            \"shareCommentary\": {\n                \"text\": {{ $json.text }}\n            },\n            \"media\": {\n              \"originalUrl\": {{ $('Google Sheets Trigger').item.json.url }}\n            }\n        }\n    },\n    \"visibility\": {\n        \"com.linkedin.ugc.MemberNetworkVisibility\": \"PUBLIC\"\n    }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        784
+      ],
+      "id": "4e3756a7-9d2b-4d8e-a3c5-f8ae79528cd1",
+      "name": "Post to Linkedin With Link",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "W5zC76zLLQRe0m51",
+          "name": "OIDC User Info Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.linkedin.com/v2/userinfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        1088
+      ],
+      "id": "88bf1500-bf9c-41ee-91d2-280e8173e3dc",
+      "name": "Get OIDC User Details",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "W5zC76zLLQRe0m51",
+          "name": "OIDC User Info Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/v2/ugcPosts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"author\": \"urn:li:person:{{ $json.sub }}\",\n    \"lifecycleState\": \"PUBLISHED\",\n    \"specificContent\": {\n        \"com.linkedin.ugc.ShareContent\": {\n            \"shareCommentary\": {\n                \"text\": {{ $('Edit Fields').item.json.text.toJsonString() }}\n            },\n            \"shareMediaCategory\": \"NONE\"\n        }\n    },\n    \"visibility\": {\n        \"com.linkedin.ugc.MemberNetworkVisibility\": \"PUBLIC\"\n    }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        1088
+      ],
+      "id": "493cbc02-3258-4c8a-ab89-c0fe6cc4f8c5",
+      "name": "Post to Linkedin Without Link",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "Aav6bNTclcGpZlmV",
+          "name": "OIDC Post Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.linkedin.com/v2/userinfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        128,
+        784
+      ],
+      "id": "efdfe1da-fb22-4d62-8c2f-40cfcc997aca",
+      "name": "Get OIDC User Details1",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "W5zC76zLLQRe0m51",
+          "name": "OIDC User Info Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nvar items = $input.all();\n\nreturn items[items.length-1];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1968,
+        144
+      ],
+      "id": "ac6405b8-20f2-4483-9e06-5b346e624875",
+      "name": "Get Last Row"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1S-0xnld6IGLCv2nfpvkxnSdIxzdtvV8nK5bPI9Vu7c0",
+          "mode": "list",
+          "cachedResultName": "Social Media Content",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1S-0xnld6IGLCv2nfpvkxnSdIxzdtvV8nK5bPI9Vu7c0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1S-0xnld6IGLCv2nfpvkxnSdIxzdtvV8nK5bPI9Vu7c0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $json.date }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1504,
+        144
+      ],
+      "id": "63c63ffb-4174-421e-ba00-0fe6eec27b59",
+      "name": "Get Last Row in Sheets",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fYo0CpehoQ9moOFe",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Last Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch Platform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Platform": {
+      "main": [
+        [
+          {
+            "node": "If Facebook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Twitter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Linkedin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Facebook": {
+      "main": [
+        [
+          {
+            "node": "Post To Facebook With Link",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Post To Facebook Without Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Twitter": {
+      "main": [
+        [
+          {
+            "node": "Post To Twitter With Link",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Post To Twitter Without Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Linkedin": {
+      "main": [
+        [
+          {
+            "node": "Get OIDC User Details1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get OIDC User Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get OIDC User Details": {
+      "main": [
+        [
+          {
+            "node": "Post to Linkedin Without Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get OIDC User Details1": {
+      "main": [
+        [
+          {
+            "node": "Post to Linkedin With Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Last Row": {
+      "main": [
+        [
+          {
+            "node": "Get Last Row in Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Last Row in Sheets": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fb459057-8e16-4031-a52f-b4acbb1c8de1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1e6985e5305c7fba72324068d31dd12c90fd213a79260fd2fa5de31c51790cfc"
+  },
+  "id": "CrEglHy3hGFI85p7",
+  "tags": []
+}
